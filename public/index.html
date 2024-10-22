@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce App</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        header { background: #333; color: white; padding: 10px 0; text-align: center; }
+        nav a { color: white; margin: 0 10px; text-decoration: none; }
+        .container { padding: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        table, th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .btn { background-color: #4CAF50; color: white; padding: 10px 20px; text-align: center; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav>
+        <a href="#" onclick="showHome()">Home</a>
+        <a href="#" onclick="showProducts()">Products</a>
+        <a href="#" onclick="showSignup()">Sign Up</a>
+        <a href="#" onclick="showLogin()">Login</a>
+        <a href="#" onclick="showContact()">Contact Us</a>
+    </nav>
+</header>
+
+<div class="container" id="content">
+    <!-- Content will be injected here -->
+</div>
+
+<script>
+    function showHome() {
+        document.getElementById('content').innerHTML = '<h1>Welcome to our E-Commerce Store</h1>';
+    }
+
+    function showSignup() {
+        document.getElementById('content').innerHTML = `
+            <h2>Sign Up</h2>
+            <form id="signupForm">
+                <label>Name: </label><input type="text" id="name" required><br><br>
+                <label>Email: </label><input type="email" id="email" required><br><br>
+                <label>Mobile: </label><input type="text" id="mobile" required><br><br>
+                <label>Password: </label><input type="password" id="password" required><br><br>
+                <button class="btn" onclick="signup(event)">Sign Up</button>
+            </form>
+        `;
+    }
+
+    function signup(event) {
+        event.preventDefault();
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const mobile = document.getElementById('mobile').value;
+        const password = document.getElementById('password').value;
+
+        fetch('http://localhost:5000/user/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, mobile, password })
+        }).then(res => res.text()).then(data => {
+            alert(data);
+            showLogin();
+        }).catch(err => console.error(err));
+    }
+
+    function showLogin() {
+        document.getElementById('content').innerHTML = `
+            <h2>Login</h2>
+            <form id="loginForm">
+                <label>Email: </label><input type="email" id="loginEmail" required><br><br>
+                <label>Password: </label><input type="password" id="loginPassword" required><br><br>
+                <button class="btn" onclick="login(event)">Login</button>
+            </form>
+        `;
+    }
+
+    function login(event) {
+        event.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        fetch('http://localhost:5000/user/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        }).then(res => res.json()).then(data => {
+            alert('Logged in successfully!');
+            showProducts();
+        }).catch(err => {
+            console.error(err);
+            alert('Invalid credentials');
+        });
+    }
+
+    function showProducts() {
+        fetch('http://localhost:5000/products')
+        .then(res => res.json())
+        .then(products => {
+            let productTable = `
+                <h2>Products</h2>
+                <table>
+                    <tr><th>Name</th><th>Supplies</th><th>Price</th><th>Action</th></tr>
+            `;
+            products.forEach(product => {
+                productTable += `
+                    <tr>
+                        <td>${product.name}</td>
+                        <td>${product.supplies}</td>
+                        <td>${product.price}</td>
+                        <td><button class="btn" onclick="addToCart('${product._id}', '${product.name}', ${product.price})">Add to Cart</button></td>
+                    </tr>
+                `;
+            });
+            productTable += '</table>';
+            document.getElementById('content').innerHTML = productTable;
+        });
+    }
+
+    function addToCart(productId, name, price) {
+        fetch('http://localhost:5000/cart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: 'userId-placeholder', productId, name, price })
+        }).then(res => res.json()).then(cart => {
+            alert('Added to cart!');
+        }).catch(err => console.error(err));
+    }
+
+    function showContact() {
+        document.getElementById('content').innerHTML = '<h2>Contact Us</h2><p>Email: support@ecomapp.com</p>';
+    }
+
+    // Show Home by default
+    showHome();
+</script>
+
+</body>
+</html>
